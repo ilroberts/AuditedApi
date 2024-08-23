@@ -9,6 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Audit.NET" Version="26.0.1" />
     <PackageReference Include="Audit.WebApi.Core" Version="26.0.1" />
+    <PackageReference Include="CorrelationId" Version="3.0.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.7" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.4" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />

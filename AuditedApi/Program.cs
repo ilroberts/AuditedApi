@@ -1,6 +1,8 @@
 using Audit.Core;
 using Audit.Core.Providers;
 using Audit.WebApi;
+using CorrelationId;
+using CorrelationId.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,8 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddControllers();    
+builder.Services.AddDefaultCorrelationId();
 
+builder.Services.AddControllers();    
 builder.Services.AddMvc(options => options.Filters.Add(new AuditApiAttribute()));
 
 Audit.Core.Configuration.Setup()
@@ -31,6 +34,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 app.UseHttpsRedirection();
+app.UseCorrelationId();
 
 var summaries = new[]
 {
