@@ -14,7 +14,7 @@ namespace AuditedApi.Contollers
         private readonly ICorrelationContextAccessor _correlationContext = correlationContext;
 
         [HttpGet]
-        [AuditApi(EventTypeName = "GetForecasts")]
+        [AuditApi(EventTypeName = "GetForecasts", IncludeHeaders = true)]
         public string GetForecasts()
         {
             var CorrelationId = _correlationContext.CorrelationContext.CorrelationId;
