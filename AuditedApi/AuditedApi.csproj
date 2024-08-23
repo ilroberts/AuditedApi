@@ -6,6 +6,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <Target Name="DeleteLogFiles" AfterTargets="AfterBuild">
+    <ItemGroup>
+      <FilesToDelete Include="$(MSBuildProjectDirectory)/logs/*.json" />
+    </ItemGroup>
+    <Delete Files="@(FilesToDelete)" />
+    <Message Text="Deleted log files from $(MSBuildProjectDirectory)/logs/*.json" Importance="high" />
+  </Target>
+
   <ItemGroup>
     <PackageReference Include="Audit.NET" Version="26.0.1" />
     <PackageReference Include="Audit.WebApi.Core" Version="26.0.1" />
