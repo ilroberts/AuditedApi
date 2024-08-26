@@ -1,0 +1,44 @@
+name: Build and Test .NET Projects
+
+# Triggers the workflow on push or pull request to the main branch or when changes are made to either project
+on:
+  push:
+    paths:
+      - 'AuditedApi/**'
+      - 'AuditedApi.Tests/**'
+  pull_request:
+    paths:
+      - 'AuditedApi/**'
+      - 'AuditedApi.Tests/**'
+
+# Define jobs
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Set up .NET SDK
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.x'  # Specify the .NET version you're using
+
+      # Restore dependencies for the WebAPI project
+      - name: Restore dependencies for WebAPI project
+        run: dotnet restore WebAPIProject/WebAPIProject.csproj
+
+      # Build the WebAPI project
+      - name: Build AuditedApi project
+        run: dotnet build AuditedApi/AuditedApi.csproj --configuration Release --no-restore
+
+      # Restore dependencies for the Unit Test project
+      - name: Restore dependencies for Unit Test project
+        run: dotnet restore AuditedApi.Tests/AuditedApi.Tests.csproj
+
+      # Run the unit tests
+      - name: Run Unit Tests
+        run: dotnet test AuditedApi.Tests/AuditedApi.Tests.csproj --no-restore --verbosity normal
