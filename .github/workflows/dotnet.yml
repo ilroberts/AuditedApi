@@ -4,12 +4,11 @@ name: Build and Test .NET Projects
 on:
   push:
     paths:
-      - 'AuditedApi/**'
-      - 'AuditedApi.Tests/**'
+      - '**/**'
   pull_request:
     paths:
-      - 'AuditedApi/**'
-      - 'AuditedApi.Tests/**'
+      - '**/**'
+  workflow_dispatch:
 
 # Define jobs
 jobs:
@@ -19,17 +18,17 @@ jobs:
     steps:
       # Checkout the code from the repository
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Set up .NET SDK
       - name: Setup .NET
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.x'  # Specify the .NET version you're using
 
       # Restore dependencies for the WebAPI project
-      - name: Restore dependencies for WebAPI project
-        run: dotnet restore WebAPIProject/WebAPIProject.csproj
+      - name: Restore dependencies for AuditedApi project
+        run: dotnet restore AuditedApi/AuditedApi.csproj
 
       # Build the WebAPI project
       - name: Build AuditedApi project

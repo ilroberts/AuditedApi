@@ -1,7 +1,7 @@
 
 # .Net API auditing proof of concept
 
-test change to force build
+![example workflow](https://github.com/ilroberts/AuditedApi/actions/workflows/dotnet.yml/badge.svg?branch=main)
 
 This project illustrates the use of [Audit.NET](https://github.com/thepirat000/Audit.NET) and [CorrelationId](https://github.com/stevejgordon/CorrelationId) to provide an audit trail within and between services.
 
