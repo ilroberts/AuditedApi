@@ -14,9 +14,17 @@ builder.Services.AddControllers();
 builder.Services.AddHttpClient("ClientService")
     .AddResilienceHandler("my-pipeline", (ResiliencePipelineBuilder<HttpResponseMessage> builder) =>
 {
-    builder.AddRetry(new RetryStrategyOptions<HttpResponseMessage> { MaxRetryAttempts = 3 });   
+    builder.AddRetry(new RetryStrategyOptions<HttpResponseMessage>
+    {
+        MaxRetryAttempts = 5,
+        ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
+            .HandleResult(response => !response.IsSuccessStatusCode)
+    });
+
+    // now add the chaos!
     const double failureRate = 0.5;
-    builder.AddChaosOutcome(failureRate, () => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+    builder.AddChaosOutcome(failureRate, () 
+        => new HttpResponseMessage(HttpStatusCode.InternalServerError));
 });
 
 var app = builder.Build();
