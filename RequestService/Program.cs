@@ -1,4 +1,7 @@
-using RequestService.Policies;
+using System.Net;
+using Polly;
+using Polly.Retry;
+using Polly.Simmy;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,7 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
-builder.Services.AddSingleton<ClientPolicy>(new ClientPolicy());
+
+builder.Services.AddHttpClient("ClientService")
+    .AddResilienceHandler("my-pipeline", (ResiliencePipelineBuilder<HttpResponseMessage> builder) =>
+{
+    builder.AddRetry(new RetryStrategyOptions<HttpResponseMessage> { MaxRetryAttempts = 3 });   
+    const double failureRate = 0.5;
+    builder.AddChaosOutcome(failureRate, () => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+});
 
 var app = builder.Build();
 

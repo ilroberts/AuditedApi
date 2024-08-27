@@ -1,20 +1,18 @@
 using Microsoft.AspNetCore.Mvc;
-using RequestService.Policies;
 
 namespace RequestService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RequestController(ClientPolicy clientPolicy) : ControllerBase
+    public class RequestController(IHttpClientFactory httpClientFactory) : ControllerBase
     {
-        private readonly ClientPolicy _clientPolicy = clientPolicy;
+        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
         [HttpGet]
         public async Task<ActionResult> MakeRequest()
         {
-            var client = new HttpClient();
-            var response = await _clientPolicy.ImmediateHttpRetry.ExecuteAsync(
-              () => client.GetAsync("http://localhost:5001/api/forecast"));
+            var client = _httpClientFactory.CreateClient("ClientService");
+            var response = await client.GetAsync("http://localhost:5001/api/forecast");
 
             if (response.IsSuccessStatusCode)
             {
@@ -28,6 +26,5 @@ namespace RequestService.Controllers
                 return StatusCode((int)response.StatusCode, response.ReasonPhrase);
             }
         }
-
     }
 }
