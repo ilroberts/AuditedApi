@@ -1,4 +1,5 @@
 using Audit.WebApi;
+using AuditedApi.Services;
 using CorrelationId;
 using CorrelationId.DependencyInjection;
 
@@ -11,6 +12,8 @@ builder.Services.AddDefaultCorrelationId();
 
 builder.Services.AddControllers();
 builder.Services.AddMvc(options => options.Filters.Add(new AuditApiAttribute()));
+
+builder.Services.AddSingleton<IForecastService, ForecastService>();
 
 Audit.Core.Configuration.Setup()
     .UseFileLogProvider(cfg => cfg.Directory(@"logs"));
