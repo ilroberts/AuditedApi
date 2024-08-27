@@ -6,7 +6,7 @@ using CorrelationId.Abstractions;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace AuditedApi.Controllers.Tests
+namespace AuditedApi.Tests.Controllers
 {
     public class ForecastControllerTests
     {
@@ -40,6 +40,8 @@ namespace AuditedApi.Controllers.Tests
 
             // Assert
             Assert.Single(result);
+            Assert.Equal(20, result[0].TemperatureC);
+            Assert.Equal("Warm", result[0].Summary);
         }
 
         private static WeatherForecast[] CreateWeatherForecasts()
