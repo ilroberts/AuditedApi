@@ -4,6 +4,7 @@ using Polly;
 using Polly.Retry;
 using Polly.Simmy;
 using Polly.Simmy.Fault;
+using Polly.Simmy.Latency;
 using Polly.Simmy.Outcomes;
 using RequestService.Chaos;
 
@@ -30,7 +31,14 @@ builder.Services.AddHttpClient("ClientService")
             .HandleResult(response => !response.IsSuccessStatusCode)
     });
 
-    builder.AddChaosOutcome(new ChaosOutcomeStrategyOptions<HttpResponseMessage>
+    builder
+    .AddChaosLatency(new ChaosLatencyStrategyOptions
+    {
+        EnabledGenerator = args => chaosManager.IsChaosEnabledAsync(args.Context),
+        InjectionRateGenerator = args => chaosManager.GetInjectionRateAsync(args.Context),
+        Latency = TimeSpan.FromSeconds(5)
+    })
+    .AddChaosOutcome(new ChaosOutcomeStrategyOptions<HttpResponseMessage>
     {
         EnabledGenerator = args => chaosManager.IsChaosEnabledAsync(args.Context),
         InjectionRateGenerator = args => chaosManager.GetInjectionRateAsync(args.Context),
