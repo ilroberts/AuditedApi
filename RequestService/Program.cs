@@ -1,7 +1,13 @@
 using System.Net;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Resilience;
 using Polly;
 using Polly.Retry;
 using Polly.Simmy;
+using Polly.Simmy.Fault;
+using Polly.Simmy.Latency;
+using Polly.Simmy.Outcomes;
+using RequestService.Chaos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,20 +17,60 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
-builder.Services.AddHttpClient("ClientService")
-    .AddResilienceHandler("my-pipeline", (ResiliencePipelineBuilder<HttpResponseMessage> builder) =>
+builder.Services.TryAddSingleton<IChaosManager, ChaosManager>();
+builder.Services.AddHttpContextAccessor();
+
+var httpClientBuilder = builder.Services.AddHttpClient("ClientService", client =>
 {
-    builder.AddRetry(new RetryStrategyOptions<HttpResponseMessage>
+    client.BaseAddress = new Uri("http://localhost:5001");
+    client.DefaultRequestHeaders.Add("X-Correlation-Id", Guid.NewGuid().ToString());
+});
+
+httpClientBuilder.AddStandardResilienceHandler()
+    .Configure(options =>
     {
-        MaxRetryAttempts = 5,
-        ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-            .HandleResult(response => !response.IsSuccessStatusCode)
+        options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(1);
+
+        options.CircuitBreaker.ShouldHandle = args => args.Outcome switch
+        {
+            { } outcome when HttpClientResiliencePredicates.IsTransient(outcome) => PredicateResult.True(),
+            { Exception: InvalidOperationException } => PredicateResult.True(),
+            _ => PredicateResult.False(),
+        };
+
+        options.Retry.ShouldHandle = args => args.Outcome switch
+        {
+            { } outcome when HttpClientResiliencePredicates.IsTransient(outcome) => PredicateResult.True(),
+            { Exception: InvalidOperationException } => PredicateResult.True(),
+            _ => PredicateResult.False(),
+        };
     });
 
-    // now add the chaos!
-    const double failureRate = 0.5;
-    builder.AddChaosOutcome(failureRate, () 
-        => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+httpClientBuilder
+    .AddResilienceHandler("chaos", (builder, context) =>
+{
+    var chaosManager = context.ServiceProvider.GetRequiredService<IChaosManager>();
+
+    builder
+    .AddChaosLatency(new ChaosLatencyStrategyOptions
+    {
+        EnabledGenerator = args => chaosManager.IsChaosEnabledAsync(args.Context),
+        InjectionRateGenerator = args => chaosManager.GetInjectionRateAsync(args.Context),
+        Latency = TimeSpan.FromSeconds(5)
+    })
+    .AddChaosOutcome(new ChaosOutcomeStrategyOptions<HttpResponseMessage>
+    {
+        EnabledGenerator = args => chaosManager.IsChaosEnabledAsync(args.Context),
+        InjectionRateGenerator = args => chaosManager.GetInjectionRateAsync(args.Context),
+        OutcomeGenerator = new OutcomeGenerator<HttpResponseMessage>()
+            .AddResult(() => new HttpResponseMessage(HttpStatusCode.InternalServerError))
+    }).AddChaosFault(new ChaosFaultStrategyOptions
+    {
+        EnabledGenerator = args => chaosManager.IsChaosEnabledAsync(args.Context),
+        InjectionRateGenerator = args => chaosManager.GetInjectionRateAsync(args.Context),
+        FaultGenerator = new FaultGenerator()
+            .AddException(() => new InvalidOperationException("chaos strategy injection!"))
+    });
 });
 
 var app = builder.Build();

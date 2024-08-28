@@ -4,15 +4,21 @@ namespace RequestService.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class RequestController(IHttpClientFactory httpClientFactory) : ControllerBase
+    public class RequestController : ControllerBase
     {
-        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly HttpClient _httpClient;
+
+        public RequestController(IHttpClientFactory httpClientFactory)
+        {
+            _httpClientFactory = httpClientFactory;
+            _httpClient = _httpClientFactory.CreateClient("ClientService");
+        }
 
         [HttpGet]
         public async Task<ActionResult> MakeRequest()
         {
-            var client = _httpClientFactory.CreateClient("ClientService");
-            var response = await client.GetAsync("http://localhost:5001/api/forecast");
+            var response = await _httpClient.GetAsync("http://localhost:5001/api/forecast");
 
             if (response.IsSuccessStatusCode)
             {
