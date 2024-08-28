@@ -1,5 +1,6 @@
 using System.Net;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Http.Resilience;
 using Polly;
 using Polly.Retry;
 using Polly.Simmy;
@@ -19,17 +20,36 @@ builder.Services.AddControllers();
 builder.Services.TryAddSingleton<IChaosManager, ChaosManager>();
 builder.Services.AddHttpContextAccessor();
 
-builder.Services.AddHttpClient("ClientService")
-    .AddResilienceHandler("my-pipeline", (builder, context) =>
+var httpClientBuilder = builder.Services.AddHttpClient("ClientService", client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5001");
+    client.DefaultRequestHeaders.Add("X-Correlation-Id", Guid.NewGuid().ToString());
+});
+
+httpClientBuilder.AddStandardResilienceHandler()
+    .Configure(options =>
+    {
+        options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(1);
+
+        options.CircuitBreaker.ShouldHandle = args => args.Outcome switch
+        {
+            { } outcome when HttpClientResiliencePredicates.IsTransient(outcome) => PredicateResult.True(),
+            { Exception: InvalidOperationException } => PredicateResult.True(),
+            _ => PredicateResult.False(),
+        };
+
+        options.Retry.ShouldHandle = args => args.Outcome switch
+        {
+            { } outcome when HttpClientResiliencePredicates.IsTransient(outcome) => PredicateResult.True(),
+            { Exception: InvalidOperationException } => PredicateResult.True(),
+            _ => PredicateResult.False(),
+        };
+    });
+
+httpClientBuilder
+    .AddResilienceHandler("chaos", (builder, context) =>
 {
     var chaosManager = context.ServiceProvider.GetRequiredService<IChaosManager>();
-
-    builder.AddRetry(new RetryStrategyOptions<HttpResponseMessage>
-    {
-        MaxRetryAttempts = 5,
-        ShouldHandle = new PredicateBuilder<HttpResponseMessage>()
-            .HandleResult(response => !response.IsSuccessStatusCode)
-    });
 
     builder
     .AddChaosLatency(new ChaosLatencyStrategyOptions

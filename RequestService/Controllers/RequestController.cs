@@ -13,7 +13,6 @@ namespace RequestService.Controllers
         {
             _httpClientFactory = httpClientFactory;
             _httpClient = _httpClientFactory.CreateClient("ClientService");
-            _httpClient.DefaultRequestHeaders.Add("X-Correlation-Id", Guid.NewGuid().ToString());
         }
 
         [HttpGet]
