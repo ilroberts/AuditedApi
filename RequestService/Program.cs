@@ -1,7 +1,11 @@
 using System.Net;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Polly;
 using Polly.Retry;
 using Polly.Simmy;
+using Polly.Simmy.Fault;
+using Polly.Simmy.Outcomes;
+using RequestService.Chaos;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,9 +15,14 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
+builder.Services.TryAddSingleton<IChaosManager, ChaosManager>();
+builder.Services.AddHttpContextAccessor();
+
 builder.Services.AddHttpClient("ClientService")
-    .AddResilienceHandler("my-pipeline", (ResiliencePipelineBuilder<HttpResponseMessage> builder) =>
+    .AddResilienceHandler("my-pipeline", (builder, context) =>
 {
+    var chaosManager = context.ServiceProvider.GetRequiredService<IChaosManager>();
+
     builder.AddRetry(new RetryStrategyOptions<HttpResponseMessage>
     {
         MaxRetryAttempts = 5,
@@ -21,10 +30,19 @@ builder.Services.AddHttpClient("ClientService")
             .HandleResult(response => !response.IsSuccessStatusCode)
     });
 
-    // now add the chaos!
-    const double failureRate = 0.5;
-    builder.AddChaosOutcome(failureRate, () 
-        => new HttpResponseMessage(HttpStatusCode.InternalServerError));
+    builder.AddChaosOutcome(new ChaosOutcomeStrategyOptions<HttpResponseMessage>
+    {
+        EnabledGenerator = args => chaosManager.IsChaosEnabledAsync(args.Context),
+        InjectionRateGenerator = args => chaosManager.GetInjectionRateAsync(args.Context),
+        OutcomeGenerator = new OutcomeGenerator<HttpResponseMessage>()
+            .AddResult(() => new HttpResponseMessage(HttpStatusCode.InternalServerError))
+    }).AddChaosFault(new ChaosFaultStrategyOptions
+    {
+        EnabledGenerator = args => chaosManager.IsChaosEnabledAsync(args.Context),
+        InjectionRateGenerator = args => chaosManager.GetInjectionRateAsync(args.Context),
+        FaultGenerator = new FaultGenerator()
+            .AddException(() => new InvalidOperationException("chaos strategy injection!"))
+    });
 });
 
 var app = builder.Build();
