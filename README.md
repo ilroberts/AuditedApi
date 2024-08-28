@@ -5,9 +5,25 @@
 
 This project illustrates the use of [Audit.NET](https://github.com/thepirat000/Audit.NET) and [CorrelationId](https://github.com/stevejgordon/CorrelationId) to provide an audit trail within and between services.
 
+The project also illustrates the use of [Polly](https://www.pollydocs.org/index.html) as a relience library betwen the RequestService and the AuditedApi. It also makes use of [Simmy](https://github.com/Polly-Contrib/Simmy) to simulate faults in the RequestService.
+
 ## Running locally
 
-### Running the service
+### RequestService
+
+#### Running the RequestService service
+
+1. ```cd RequestService```
+2. ```dotnet restore```
+3. ```dotnet run```
+
+#### Calling the API
+
+Using your favourite API client, call ```http://localhost:5002/api/Forecast```.
+
+### Audited API
+
+#### Running the AuditedAPI service
 
 1. ```cd AuditedApi```
 2. ```dotnet restore```
@@ -15,11 +31,11 @@ This project illustrates the use of [Audit.NET](https://github.com/thepirat000/A
 
 The API will start up on port 5001 by default.
 
-### Calling the API
+#### Calling the RequestService API
 
-Using your favourite API client, call ```http://localhost:5001/api/Forecast```. Pass the correlation id using the **X-Correlation-ID** header.
+Using your favourite API client, call ```http://localhost:5001/api/request```. This will act as a proxy for a call to the AuditedApi. The AuditedApi therefore needs to be running for this to work. The ```program.cs``` file in the RequestService project contains the Chaos configurations. This implementation followed a [blog post from Microsoft](https://devblogs.microsoft.com/dotnet/resilience-and-chaos-engineering/).
 
-### View the audit record
+#### View the audit record
 
 For the purposes of this PoC the audit output is located in the logs directory. The following is an example of the output produced:
 

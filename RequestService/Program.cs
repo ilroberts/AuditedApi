@@ -2,7 +2,6 @@ using System.Net;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Http.Resilience;
 using Polly;
-using Polly.Retry;
 using Polly.Simmy;
 using Polly.Simmy.Fault;
 using Polly.Simmy.Latency;
