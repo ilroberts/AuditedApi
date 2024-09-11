@@ -6,6 +6,9 @@
 # dotenv files
 .env
 
+#codeql stuff
+.github/codeql/
+
 # generated log files
 logs/
 

@@ -1,30 +1,25 @@
-namespace AuditedApi.Tests.Services
+namespace AuditedApi.Tests.Services;
+
+using System;
+using AuditedApi.Services;
+using Xunit;
+
+public class ForecastServiceTests
 {
-    using AuditedApi.Models;
-    using AuditedApi.Services;
-    using System;
-    using Xunit;
+  private readonly ForecastService _service;
 
-    public class ForecastServiceTests
-    {
-        private readonly ForecastService _service;
+  public ForecastServiceTests() => this._service = new ForecastService();
 
-        public ForecastServiceTests()
-        {
-            _service = new ForecastService();
-        }
+  [Fact]
+  public void GetForecastReturnsWeatherForecasts()
+  {
+    // Arrange
+    var startDate = DateTime.Now;
 
-        [Fact]
-        public void GetForecast_ReturnsWeatherForecasts()
-        {
-            // Arrange
-            DateTime startDate = DateTime.Now;
+    // Act
+    var result = this._service.GetForecast(startDate);
 
-            // Act
-            WeatherForecast[] result = _service.GetForecast(startDate);
-
-            // Assert
-            Assert.Equal(5, result.Length);
-        }
-    }
+    // Assert
+    Assert.Equal(5, result.Length);
+  }
 }

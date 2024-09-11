@@ -1,9 +1,8 @@
+namespace AuditedApi.Services;
+
 using AuditedApi.Models;
 
-namespace AuditedApi.Services
+public interface IForecastService
 {
-    public interface IForecastService
-    {
-        WeatherForecast[] GetForecast(DateTime startDate);
-    }
+  WeatherForecast[] GetForecast(DateTime startDate);
 }
