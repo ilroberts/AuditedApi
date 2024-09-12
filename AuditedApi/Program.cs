@@ -1,4 +1,5 @@
 using Audit.WebApi;
+using AuditedApi.Commands;
 using AuditedApi.Services;
 using CorrelationId;
 using CorrelationId.DependencyInjection;
@@ -14,6 +15,7 @@ builder.Services.AddControllers();
 builder.Services.AddMvc(options => options.Filters.Add(new AuditApiAttribute()));
 
 builder.Services.AddSingleton<IForecastService, ForecastService>();
+builder.Services.AddSingleton<IForecastSummaryCommand, ForecastSummaryEnglishCommand>();
 
 Audit.Core.Configuration.Setup()
     .UseFileLogProvider(cfg => cfg.Directory(@"logs"));
@@ -23,9 +25,9 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-  app.UseDeveloperExceptionPage();
-  app.UseSwagger();
-  app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuditedApi v1"));
+    app.UseDeveloperExceptionPage();
+    app.UseSwagger();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuditedApi v1"));
 }
 
 app.MapControllers();

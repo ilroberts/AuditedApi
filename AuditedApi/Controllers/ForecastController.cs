@@ -13,17 +13,17 @@ public class ForecastController(ILogger<ForecastController> logger,
     ICorrelationContextAccessor correlationContext,
     IForecastService forecastService) : ControllerBase
 {
-  private readonly ILogger<ForecastController> _logger = logger;
-  private readonly ICorrelationContextAccessor _correlationContext = correlationContext;
-  private readonly IForecastService _forecastService = forecastService;
+    private readonly ILogger<ForecastController> _logger = logger;
+    private readonly ICorrelationContextAccessor _correlationContext = correlationContext;
+    private readonly IForecastService _forecastService = forecastService;
 
-  [HttpGet]
-  public WeatherForecast[] GetForecasts()
-  {
-    var CorrelationId = this._correlationContext.CorrelationContext.CorrelationId;
-    this._logger.LogInformation("Getting forecasts: correlationId={CorrelationId}", CorrelationId);
+    [HttpGet]
+    public WeatherForecast[] GetForecasts()
+    {
+        var CorrelationId = this._correlationContext.CorrelationContext.CorrelationId;
+        this._logger.LogInformation("Getting forecasts: correlationId={CorrelationId}", CorrelationId);
 
-    var forecast = this._forecastService.GetForecast(DateTime.Now);
-    return forecast;
-  }
+        var forecast = this._forecastService.GetForecast(DateTime.Now);
+        return forecast;
+    }
 }

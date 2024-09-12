@@ -4,5 +4,5 @@ using AuditedApi.Models;
 
 public interface IForecastService
 {
-  WeatherForecast[] GetForecast(DateTime startDate);
+    WeatherForecast[] GetForecast(DateTime startDate);
 }
