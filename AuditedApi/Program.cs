@@ -15,7 +15,14 @@ builder.Services.AddControllers();
 builder.Services.AddMvc(options => options.Filters.Add(new AuditApiAttribute()));
 
 builder.Services.AddSingleton<IForecastService, ForecastService>();
-builder.Services.AddSingleton<IForecastSummaryCommand, ForecastSummaryEnglishCommand>();
+
+var language = builder.Configuration["Language"];
+builder.Services.AddSingleton<IForecastSummaryCommand>(provider => language switch
+    {
+        "fr" => new ForecastSummaryFrenchCommand(),
+        "en" => new ForecastSummaryEnglishCommand(),
+        _ => throw new ArgumentException("Language not supported")
+    });
 
 Audit.Core.Configuration.Setup()
     .UseFileLogProvider(cfg => cfg.Directory(@"logs"));
