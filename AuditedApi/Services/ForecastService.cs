@@ -1,23 +1,23 @@
-namespace AuditedApi.Services;
-
 using System;
-using System.Linq;
 using AuditedApi.Commands;
 using AuditedApi.Models;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
 
-public class ForecastService : IForecastService
+namespace AuditedApi.Services;
+
+public class ForecastService(IForecastSummaryCommand summaryCommand,
+    IHttpContextAccessor httpContextAccessor,
+    ILogger<ForecastService> logger) : IForecastService
 {
-    private readonly IForecastSummaryCommand _summaryCommand;
-
-    public ForecastService(IForecastSummaryCommand summaryCommand)
-    {
-        _summaryCommand = summaryCommand;
-    }
+    private readonly IForecastSummaryCommand _summaryCommand = summaryCommand;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly ILogger _logger = logger;
 
     public WeatherForecast[] GetForecast(DateTime startDate)
     {
+        // get the correlation id as an example of how to use IHttpContextAccessor
+        var correlationId = _httpContextAccessor.HttpContext.Request.Headers["X-Correlation-ID"];
+        _logger.LogInformation($"Correlation ID: {correlationId}");
+
         return Enumerable.Range(1, 5).Select(index =>
             new WeatherForecast
             (
