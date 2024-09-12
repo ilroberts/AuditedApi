@@ -1,26 +1,16 @@
-namespace AuditedApi.Services;
-
 using System;
-using System.Linq;
 using AuditedApi.Commands;
 using AuditedApi.Models;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Newtonsoft.Json;
 
-public class ForecastService : IForecastService
+namespace AuditedApi.Services;
+
+public class ForecastService(IForecastSummaryCommand summaryCommand,
+    IHttpContextAccessor httpContextAccessor,
+    ILogger<ForecastService> logger) : IForecastService
 {
-    private readonly IForecastSummaryCommand _summaryCommand;
-    private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly ILogger _logger;
-
-    public ForecastService(IForecastSummaryCommand summaryCommand,
-        IHttpContextAccessor httpContextAccessor,
-        ILogger<ForecastService> logger)
-    {
-        _summaryCommand = summaryCommand;
-        _httpContextAccessor = httpContextAccessor;
-        _logger = logger;
-    }
+    private readonly IForecastSummaryCommand _summaryCommand = summaryCommand;
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+    private readonly ILogger _logger = logger;
 
     public WeatherForecast[] GetForecast(DateTime startDate)
     {
