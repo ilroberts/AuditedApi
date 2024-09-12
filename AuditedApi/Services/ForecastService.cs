@@ -1,26 +1,29 @@
-namespace AuditedApi.Services
+namespace AuditedApi.Services;
+
+using System;
+using System.Linq;
+using AuditedApi.Commands;
+using AuditedApi.Models;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json;
+
+public class ForecastService : IForecastService
 {
-    using AuditedApi.Models;
-    using System;
-    using System.Linq;
+    private readonly IForecastSummaryCommand _summaryCommand;
 
-    public class ForecastService : IForecastService
+    public ForecastService(IForecastSummaryCommand summaryCommand)
     {
-        private readonly string[] summaries =
-        [
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild",
-            "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        ];
+        _summaryCommand = summaryCommand;
+    }
 
-        public WeatherForecast[] GetForecast(DateTime startDate)
-        {
-            return Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                (
-                    DateOnly.FromDateTime(startDate.AddDays(index)),
-                    Random.Shared.Next(-20, 55),
-                    summaries[Random.Shared.Next(summaries.Length)]
-                )).ToArray();
-        }
+    public WeatherForecast[] GetForecast(DateTime startDate)
+    {
+        return Enumerable.Range(1, 5).Select(index =>
+            new WeatherForecast
+            (
+                DateOnly.FromDateTime(startDate.AddDays(index)),
+                Random.Shared.Next(-20, 55),
+                _summaryCommand.GetForecastSummary()
+            )).ToArray();
     }
 }
