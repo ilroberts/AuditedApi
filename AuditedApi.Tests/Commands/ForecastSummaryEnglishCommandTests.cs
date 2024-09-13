@@ -1,26 +1,26 @@
 using AuditedApi.Commands;
 
-namespace AuditedApi.Tests.Commands
+namespace AuditedApi.Tests.Commands;
+
+public class ForecastSummaryEnglishCommandTests
 {
-    public class ForecastSummaryEnglishCommandTests
+    private static readonly string[] s_expectedEnglishSummaries = [
+            "Freezing", "Bracing", "Chilly", "Cool", "Mild",
+            "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
+        ];
+
+    [Fact]
+    public void GetForecastSummary_ReturnsValidOption()
     {
-        private static readonly string[] s_expectedEnglishSummaries = [
-                "Freezing", "Bracing", "Chilly", "Cool", "Mild",
-                "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-            ];
+        // Arrange
+        var command = new ForecastSummaryEnglishCommand();
 
-        [Fact]
-        public void GetForecastSummary_ReturnsValidOption()
-        {
-            // Arrange
-            var command = new ForecastSummaryEnglishCommand();
+        // Act
+        string summary = command.GetForecastSummary();
 
-            // Act
-            string summary = command.GetForecastSummary();
-
-            // Assert
-            Assert.Contains(summary, s_expectedEnglishSummaries);
-        }
+        // Assert
+        Assert.Contains(summary, s_expectedEnglishSummaries);
     }
 }
+
 
