@@ -15,8 +15,8 @@ public class ForecastService(IForecastSummaryCommand summaryCommand,
     public WeatherForecast[] GetForecast(DateTime startDate)
     {
         // get the correlation id as an example of how to use IHttpContextAccessor
-        var correlationId = _httpContextAccessor.HttpContext.Request.Headers["X-Correlation-ID"];
-        _logger.LogInformation($"Correlation ID: {correlationId}");
+        var correlationId = _httpContextAccessor.HttpContext?.Request?.Headers["X-Correlation-ID"].FirstOrDefault();
+        _logger.LogInformation("Correlation ID: {CorrelationId}", correlationId ?? "(not set)");
 
         return Enumerable.Range(1, 5).Select(index =>
             new WeatherForecast
