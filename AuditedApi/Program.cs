@@ -17,13 +17,16 @@ builder.Services.AddMvc(options => options.Filters.Add(new AuditApiAttribute()))
 
 builder.Services.AddSingleton<IForecastService, ForecastService>();
 
-var language = builder.Configuration["Language"];
-builder.Services.AddSingleton<IForecastSummaryCommand>(provider => language switch
+builder.Services.AddSingleton<IForecastSummaryCommand>(provider =>
+{
+    var language = provider.GetRequiredService<IConfiguration>()["Language"];
+    return language switch
     {
-        "fr" => new ForecastSummaryFrenchCommand(),
-        "en" => new ForecastSummaryEnglishCommand(),
-        _ => throw new ArgumentException("Language not supported")
-    });
+        "fr" => ActivatorUtilities.CreateInstance<ForecastSummaryFrenchCommand>(provider),
+        "en" => ActivatorUtilities.CreateInstance<ForecastSummaryEnglishCommand>(provider),
+        _ => throw new ArgumentException($"Language '{language}' not supported")
+    };
+});
 
 Audit.Core.Configuration.Setup()
     .UseFileLogProvider(cfg => cfg.Directory(@"logs"));

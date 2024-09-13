@@ -1,29 +1,26 @@
+using AuditedApi.Commands;
+
 namespace AuditedApi.Tests.Commands
 {
-    using AuditedApi.Commands;
-
     public class ForecastSummaryFrenchCommandTests
     {
+        private static readonly string[] s_expectedFrenchSummaries =
+{
+            "Gelé", "Vif", "Frais", "Doux", "Chaud",
+            "Clément", "Étouffant", "Accablant"
+        };
 
         [Fact]
         public void GetForecastSummaryReturnsValidOptions()
         {
             // Arrange
             var command = new ForecastSummaryFrenchCommand();
+
             // Act
-            var summary = command.GetForecastSummary();
+            string summary = command.GetForecastSummary();
+
             // Assert
-            Assert.Contains(summary, new string[] {
-                "Gelé",
-                "Vif",
-                "Frais",
-                "Doux",
-                "Chaud",
-                "Clément",
-                "Chaud",
-                "Étouffant",
-                "Accablant"
-            });
+            Assert.Contains(summary, s_expectedFrenchSummaries);
         }
     }
 }
